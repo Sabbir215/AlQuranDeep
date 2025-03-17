@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quran Reader</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+      <div class="surah-info">Surah Al-Fatiha | Verse 1 | Ruku 1</div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Arabic Text (clickable to cycle font size) -->
+      <h1 id="arabic" onclick="cycleFontSize()">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</h1>
+
+      <!-- Pronunciation and Audio Playback -->
+      <div class="pronunciation">
+        <span id="transliteration">Bismillāhir-Raḥmānir-Raḥīm</span>
+        <button onclick="playAudio()">▶️ Play Audio</button>
+      </div>
+
+      <!-- Loading indicator -->
+      <div id="loading" class="loading">Loading word-by-word data...</div>
+
+      <!-- Word-by-Word Translation Table -->
+      <table class="word-table">
+        <thead>
+          <tr>
+            <th>Arabic</th>
+            <th>Transliteration</th>
+            <th>Translation</th>
+          </tr>
+        </thead>
+        <tbody id="word-table-body">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
+
+      <!-- Tafsir Section (moved below the table) -->
+      <div class="tafsir">
+        <button onclick="toggleTafsir()">Show/Hide Tafsir</button>
+        <p id="tafsir-text" style="display: none;">
+          This opening verse, the Basmalah, is a declaration of intent and invocation that precedes every
+          chapter of the Quran except Surah At-Tawbah.
+          'Bismi' signifies starting with Allah's remembrance. 'Allāh' is His unique name.
+          'Ar-Raḥmān' reflects universal mercy and 'Ar-Raḥīm' denotes specific mercy for believers.
+          Per Ibn Kathir, it's a Sunnah before acts, symbolizing divine reliance.
+        </p>
+      </div>
+    </main>
+
+    <!-- Hidden Audio Element -->
+    <audio id="audioPlayer" src="https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/1" preload="auto"></audio>
+
+    <!-- Navigation Bar -->
+    <footer class="nav-bar">
+      <button onclick="navigateSurah(-1)">
+        &lt;&lt;&lt;</button>
+      <button onclick="navigateRuku(-1)">
+        &lt;&lt;</button>
+      <button onclick="navigateVerse(-1)">
+        &lt;</button>
+      <input type="text" id="search" value="1-1" onkeydown="if(event.key === 'Enter') navigateToVerse()" />
+      <button onclick="navigateVerse(1)">&gt;</button>
+      <button onclick="navigateRuku(1)">&gt;&gt;</button>
+      <button onclick="navigateSurah(1)">&gt;&gt;&gt;</button>
+    </footer>
+  </div>
+
+  <script src="script.js">
+  </script>
+</body>
+
+</html>
