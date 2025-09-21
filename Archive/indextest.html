@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quran Reader</title>
+  <style>
+    :root {
+      --primary-color: #1a3c34;
+      --secondary-color: #ffd700;
+      --text-color: #333;
+      --background-color: #f5f5f5;
+      --table-border: #ddd;
+      --table-header: #f2f2f2;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      text-align: center;
+      padding: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .bismillah {
+      font-size: 2em;
+      color: var(--secondary-color);
+      text-shadow: 1px 1px 3px #000;
+    }
+
+    .surah-info {
+      font-size: 1.2em;
+      margin-top: 5px;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px;
+      text-align: center;
+      padding-bottom: 100px;
+    }
+
+    #arabic {
+      cursor: pointer;
+      font-size: 1.5em;
+      margin-bottom: 10px;
+      transition: font-size 0.3s;
+    }
+
+    .pronunciation {
+      margin: 10px 0;
+      font-size: 1.2em;
+    }
+
+    .button {
+      margin-left: 10px;
+      padding: 5px 10px;
+      font-size: 1em;
+      cursor: pointer;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #265c50;
+    }
+
+    .word-table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 90%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .word-table th,
+    .word-table td {
+      border: 1px solid var(--table-border);
+      padding: 8px;
+    }
+
+    .word-table th {
+      background-color: var(--table-header);
+    }
+
+    .arabic-word {
+      font-size: 1.2em;
+      font-family: "Traditional Arabic", "Scheherazade", serif;
+      text-align: right;
+    }
+
+    .word-table td {
+      vertical-align: middle;
+      padding: 8px 15px;
+    }
+
+    .tafsir {
+      margin: 20px 0;
+      text-align: left;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+
+    .tafsir-content {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    .tafsir-selector {
+      margin: 10px 0;
+    }
+
+    .tafsir-selector select {
+      padding: 5px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    /* Enhanced search functionality */
+    .search-container {
+      position: relative;
+      display: inline-block;
+      width: 200px;
+    }
+
+    #search {
+      width: 100%;
+      padding: 5px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      box-sizing: border-box;
+    }
+
+    footer.nav-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: var(--primary-color);
+      padding: 10px;
+      text-align: center;
+      z-index: 100;
+    }
+
+    footer.nav-bar button,
+    footer.nav-bar input {
+      margin: 0 5px;
+      padding: 5px 10px;
+    }
+
+    .loading {
+      display: none;
+      margin: 20px auto;
+      text-align: center;
+      font-style: italic;
+      color: #666;
+    }
+
+    .settings-panel {
+      display: none;
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 999;
+    }
+
+    .settings-panel h3 {
+      margin-top: 0;
+    }
+
+    .settings-panel label {
+      display: block;
+      margin: 10px 0;
+    }
+
+    .bookmarks-panel {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 10px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 999;
+      max-height: 80vh;
+      overflow-y: auto;
+      min-width: 200px;
+    }
+
+    .bookmark-item {
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+
+    .bookmark-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .error-message {
+      background-color: #ffdddd;
+      color: #990000;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      text-align: left;
+    }
+
+    body.night-mode {
+      --background-color: #121212;
+      --text-color: #e0e0e0;
+      --table-border: #333;
+      --table-header: #2a2a2a;
+      --primary-color: #113025;
+    }
+
+    body.night-mode .settings-panel,
+    body.night-mode .bookmarks-panel {
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+    }
+
+    body.night-mode .bookmark-item:hover {
+      background-color: #3a3a3a;
+    }
+
+    body.night-mode .tafsir-content {
+      background-color: #2a2a2a;
+    }
+
+    @media (max-width: 768px) {
+      .word-table {
+        font-size: 0.9em;
+      }
+
+      .nav-bar button {
+        padding: 6px;
+        margin: 2px;
+        font-size: 0.9em;
+      }
+
+      #arabic {
+        font-size: 1.3em;
+      }
+
+      .bismillah {
+        font-size: 1.5em;
+      }
+
+      main {
+        padding: 10px;
+        padding-bottom: 70px;
+      }
+
+      .search-container {
+        width: 150px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+      <div class="surah-info">Surah Al-Fatiha | Verse 1 | Ruku 1</div>
+    </header>
+
+    <main>
+      <h1 id="arabic" onclick="cycleFontSize()">
+        بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+      </h1>
+
+      <div class="pronunciation">
+        <span id="transliteration">Bismillāhir-Raḥmānir-Raḥīm</span>
+        <button onclick="playAudio()">▶️ Play Audio</button>
+      </div>
+
+      <div id="loading" class="loading">Loading word-by-word data...</div>
+
+      <table class="word-table">
+        <thead>
+          <tr>
+            <th>Arabic</th>
+            <th>Transliteration</th>
+            <th>Translation</th>
+          </tr>
+        </thead>
+        <tbody id="word-table-body">
+        </tbody>
+      </table>
+
+      <div class="tafsir">
+        <div class="tafsir-selector">
+          <label for="tafsir-select">Select Tafsir:</label>
+          <select id="tafsir-select" onchange="loadTafsir()">
+            <option value="en.tafisr.ibn-kathir">Ibn Kathir (English)</option>
+            <option value="en.tafsir.maarif-ul-quran">Maarif-ul-Quran (English)</option>
+            <option value="en.tafsir.al-jalalayn">Al-Jalalayn (English)</option>
+          </select>
+        </div>
+        <button onclick="toggleTafsir()">Show/Hide Tafsir</button>
+        <div id="tafsir-text" class="tafsir-content" style="display: none">
+          Loading tafsir...
+        </div>
+      </div>
+    </main>
+
+    <audio id="audioPlayer" preload="auto"></audio>
+
+    <footer class="nav-bar">
+      <button onclick="navigateSurah(-1)">&lt;&lt;&lt;</button>
+      <button onclick="navigateRuku(-1)">&lt;&lt;</button>
+      <button onclick="navigateVerse(-1)">&lt;</button>
+      <div class="search-container">
+        <input type="text" id="search" value="1-1" list="surah-list" onkeyup="handleSearch(event)"
+          onkeydown="if(event.key === 'Enter') navigateToVerse()" placeholder="Search or navigate" />
+        <datalist id="surah-list">
+        </datalist>
+      </div>
+      <button onclick="navigateVerse(1)">&gt;</button>
+      <button onclick="navigateRuku(1)">&gt;&gt;</button>
+      <button onclick="navigateSurah(1)">&gt;&gt;&gt;</button>
+    </footer>
+  </div>
+
+  <script>
+    // Global variables
+    let currentAyah = { surah: 1, verse: 1 };
+    let surahNames = [];
+    let surahNamesArabic = [];
+    let verseCounts = [];
+    let currentTafsir = 'en.tafisr.ibn-kathir';
+
+    // Load Surah metadata from API on startup
+    fetch("https://api.alquran.cloud/v1/meta")
+      .then((response) => response.json())
+      .then((data) => {
+        surahNames = data.data.surahs.references.map(
+          (ref) => ref.englishName
+        );
+        surahNamesArabic = data.data.surahs.references.map(
+          (ref) => ref.name
+        );
+        verseCounts = data.data.surahs.references.map(
+          (ref) => ref.numberOfAyahs
+        );
+        loadVerse(currentAyah.surah, currentAyah.verse);
+        populateDatalist();
+      })
+      .catch((err) => {
+        console.error("Error fetching metadata:", err);
+        // Fallback data
+        surahNames = [
+          "Al-Fatiha", "Al-Baqarah", "Ali 'Imran", "An-Nisa", "Al-Ma'idah", "Al-An'am", "Al-A'raf", "Al-Anfal", "At-Tawbah", "Yunus",
+          "Hud", "Yusuf", "Ar-Ra'd", "Ibrahim", "Al-Hijr", "An-Nahl", "Al-Isra", "Al-Kahf", "Maryam", "Taha",
+          "Al-Anbya", "Al-Hajj", "Al-Mu'minun", "An-Nur", "Al-Furqan", "Ash-Shu'ara", "An-Naml", "Al-Qasas", "Al-'Ankabut", "Ar-Rum"
+        ];
+        verseCounts = [7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60];
+        loadVerse(currentAyah.surah, currentAyah.verse);
+        populateDatalist();
+      });
+
+    // Populate datalist with surah names
+    function populateDatalist() {
+      const datalist = document.getElementById('surah-list');
+      datalist.innerHTML = '';
+
+      surahNames.forEach((name, index) => {
+        const option = document.createElement('option');
+        option.value = `${index + 1}-1`;
+        option.textContent = `${index + 1}. ${name}`;
+        datalist.appendChild(option);
+      });
+    }
+
+    // Handle search input with enhanced functionality
+    function handleSearch(event) {
+      const query = event.target.value.toLowerCase().trim();
+
+      // Check if it's a verse reference (e.g., "2-255")
+      if (/^\d+-\d+$/.test(query)) {
+        return;
+      }
+
+      // If it's alphabetic input, filter surahs
+      if (/^[a-zA-Z\s]+$/.test(query) && query.length > 0) {
+        const datalist = document.getElementById('surah-list');
+        datalist.innerHTML = '';
+
+        const filteredSurahs = surahNames.filter((name, index) =>
+          name.toLowerCase().includes(query) ||
+          name.toLowerCase().replace(/['\-\s]/g, '').includes(query.replace(/['\-\s]/g, ''))
+        );
+
+        filteredSurahs.forEach((name) => {
+          const index = surahNames.indexOf(name);
+          const option = document.createElement('option');
+          option.value = `${index + 1}-1`;
+          option.textContent = `${index + 1}. ${name}`;
+          datalist.appendChild(option);
+        });
+      } else if (query.length === 0) {
+        // Reset to full list when search is empty
+        populateDatalist();
+      }
+    }
+
+    // Load tafsir for current verse with better error handling
+    function loadTafsir() {
+      const selectedTafsir = document.getElementById('tafsir-select').value;
+      currentTafsir = selectedTafsir;
+
+      const tafsirText = document.getElementById('tafsir-text');
+      tafsirText.innerHTML = 'Loading tafsir...';
+
+      // Use the alquran.cloud API for tafsir which is more reliable
+      fetch(`https://api.alquran.cloud/v1/ayah/${currentAyah.surah}:${currentAyah.verse}/${selectedTafsir}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.data && data.data.text) {
+            tafsirText.innerHTML = data.data.text;
+          } else {
+            tafsirText.innerHTML = 'Tafsir not available for this verse.';
+          }
+        })
+        .catch(err => {
+          console.error('Error loading tafsir:', err);
+          // Fallback to a basic explanation
+          tafsirText.innerHTML = `
+              <div class="error-message">
+                Tafsir service temporarily unavailable. 
+                <br><br>
+                This is verse ${currentAyah.verse} of Surah ${surahNames[currentAyah.surah - 1]} (${currentAyah.surah}).
+                <br><br>
+                Please try again later or select a different tafsir option.
+              </div>
+            `;
+        });
+    }
+
+    // Load a specific verse
+    function loadVerse(surah, verse) {
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("search").value = `${surah}-${verse}`;
+      currentAyah = { surah, verse };
+
+      // Load audio
+      fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/ar.alafasy`)
+        .then(response => response.json())
+        .then(audioData => {
+          const audioPlayer = document.getElementById("audioPlayer");
+          if (audioData.data && audioData.data.audio) {
+            currentAyah.audioUrl = audioData.data.audio;
+            audioPlayer.src = currentAyah.audioUrl;
+          } else {
+            console.warn(`No audio found for Surah ${surah}, Verse ${verse}`);
+            audioPlayer.src = '';
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching audio URL:", err);
+          document.getElementById("audioPlayer").src = '';
+        });
+
+      // Load verse data
+      Promise.all([
+        fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/ar`),
+        fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/en.transliteration`),
+        fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/en.sahih`),
+      ])
+        .then((responses) => Promise.all(responses.map((res) => res.json())))
+        .then(([arabicData, translitData, transData]) => {
+          document.getElementById("arabic").innerText = arabicData.data.text;
+          document.getElementById("transliteration").innerText = translitData.data.text;
+          document.querySelector(".surah-info").innerText = `Surah ${surahNames[surah - 1]} | Verse ${verse}`;
+
+          return fetch(`https://api.quran.com/api/v4/verses/by_key/${surah}:${verse}?words=true&translations=131&word_fields=text_uthmani,transliteration&fields=text_uthmani`)
+            .then((response) => response.json())
+            .catch((err) => {
+              console.error("Error fetching word-by-word data:", err);
+              return null;
+            });
+        })
+        .then((wordData) => {
+          if (!wordData || !wordData.verse || !wordData.verse.words) {
+            return fallbackWordByWord(surah, verse);
+          }
+
+          const words = wordData.verse.words;
+          const tbody = document.getElementById("word-table-body");
+          tbody.innerHTML = "";
+
+          words.forEach((word) => {
+            if (word.char_type_name !== "end") {
+              const row = document.createElement("tr");
+
+              const arabicCell = document.createElement("td");
+              arabicCell.textContent = word.text_uthmani;
+              arabicCell.dir = "rtl";
+              arabicCell.className = "arabic-word";
+              row.appendChild(arabicCell);
+
+              const translitCell = document.createElement("td");
+              translitCell.textContent = word.transliteration?.text || "";
+              row.appendChild(translitCell);
+
+              const transCell = document.createElement("td");
+              transCell.textContent = word.translation?.text || "";
+              row.appendChild(transCell);
+
+              tbody.appendChild(row);
+            }
+          });
+
+          document.getElementById("loading").style.display = "none";
+
+          // Load tafsir for the new verse
+          loadTafsir();
+        })
+        .catch((err) => {
+          console.error("Error in verse loading process:", err);
+          fallbackWordByWord(surah, verse);
+        });
+    }
+
+    // Fallback function for word-by-word when API fails
+    function fallbackWordByWord(surah, verse) {
+      return Promise.all([
+        fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/ar`),
+        fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/en.transliteration`),
+        fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/en.sahih`),
+      ])
+        .then((responses) => Promise.all(responses.map((res) => res.json())))
+        .then(([arabicData, translitData, transData]) => {
+          document.getElementById("arabic").innerText = arabicData.data.text;
+          document.getElementById("transliteration").innerText = translitData.data.text;
+
+          const arabicWords = arabicData.data.text.split(/\s+/);
+          const translitWords = translitData.data.text.split(/\s+/);
+          const transWords = transData.data.text.split(/\s+/);
+          const maxLength = Math.max(arabicWords.length, translitWords.length, transWords.length);
+
+          const tbody = document.getElementById("word-table-body");
+          tbody.innerHTML = "";
+
+          for (let i = 0; i < maxLength; i++) {
+            const row = document.createElement("tr");
+
+            const arabicCell = document.createElement("td");
+            arabicCell.textContent = arabicWords[i] || "";
+            arabicCell.dir = "rtl";
+            arabicCell.className = "arabic-word";
+            row.appendChild(arabicCell);
+
+            const translitCell = document.createElement("td");
+            translitCell.textContent = translitWords[i] || "";
+            row.appendChild(translitCell);
+
+            const transCell = document.createElement("td");
+            transCell.textContent = transWords[i] || "";
+            row.appendChild(transCell);
+
+            tbody.appendChild(row);
+          }
+
+          document.getElementById("loading").style.display = "none";
+          loadTafsir();
+          return null;
+        })
+        .catch((err) => {
+          console.error("Error in fallback word-by-word:", err);
+          document.getElementById("loading").style.display = "none";
+          alert("Error loading verse data. Please try again later.");
+          return null;
+        });
+    }
+
+    // Font size cycling
+    const fontSizes = [1.5, 2, 2.5];
+    let currentSizeIndex = 0;
+    function cycleFontSize() {
+      currentSizeIndex = (currentSizeIndex + 1) % fontSizes.length;
+      document.getElementById("arabic").style.fontSize = fontSizes[currentSizeIndex] + "em";
+    }
+
+    // Audio playback
+    function playAudio() {
+      const audioPlayer = document.getElementById("audioPlayer");
+
+      audioPlayer.onerror = function (e) {
+        console.error("Audio playback error:", e);
+        alert(`Unable to play audio for Surah ${currentAyah.surah}, Verse ${currentAyah.verse}`);
+      };
+
+      if (audioPlayer.src) {
+        audioPlayer.currentTime = 0;
+        audioPlayer.play().catch(err => {
+          console.error("Play method error:", err);
+          alert(`Audio playback failed: ${err.message}`);
+        });
+      } else {
+        alert("No audio available for this verse.");
+      }
+    }
+
+    // Toggle tafsir display
+    function toggleTafsir() {
+      const tafsirText = document.getElementById("tafsir-text");
+      tafsirText.style.display = tafsirText.style.display === "none" ? "block" : "none";
+    }
+
+    // Navigation functions
+    function navigateVerse(direction) {
+      let newVerse = currentAyah.verse + direction;
+      let newSurah = currentAyah.surah;
+      if (newVerse < 1) {
+        newSurah--;
+        if (newSurah < 1) return;
+        newVerse = verseCounts[newSurah - 1];
+      } else if (newVerse > verseCounts[currentAyah.surah - 1]) {
+        newSurah++;
+        if (newSurah > 114) return;
+        newVerse = 1;
+      }
+      loadVerse(newSurah, newVerse);
+    }
+
+    function navigateRuku(direction) {
+      const offset = 3;
+      let newVerse = currentAyah.verse + direction * offset;
+      let newSurah = currentAyah.surah;
+      if (newVerse < 1) {
+        newSurah--;
+        if (newSurah < 1) return;
+        newVerse = verseCounts[newSurah - 1] + newVerse;
+      } else if (newVerse > verseCounts[currentAyah.surah - 1]) {
+        newSurah++;
+        if (newSurah > 114) return;
+        newVerse = newVerse - verseCounts[currentAyah.surah - 1];
+      }
+      loadVerse(newSurah, newVerse);
+    }
+
+    function navigateSurah(direction) {
+      let newSurah = currentAyah.surah + direction;
+      if (newSurah >= 1 && newSurah <= 114) {
+        loadVerse(newSurah, 1);
+      }
+    }
+
+    function navigateToVerse() {
+      const input = document.getElementById("search").value;
+
+      // Check if it's a surah-verse format
+      if (input.includes("-")) {
+        const parts = input.split("-");
+        const surah = parseInt(parts[0]);
+        const verse = parseInt(parts[1]);
+        if (surah >= 1 && surah <= 114 && verse >= 1 && verse <= verseCounts[surah - 1]) {
+          loadVerse(surah, verse);
+        } else {
+          alert("Invalid Surah or Verse number");
+        }
+      } else {
+        // Check if it's a surah name
+        const surahIndex = surahNames.findIndex(name =>
+          name.toLowerCase().includes(input.toLowerCase()) ||
+          name.toLowerCase().replace(/['\-\s]/g, '').includes(input.toLowerCase().replace(/['\-\s]/g, ''))
+        );
+
+        if (surahIndex !== -1) {
+          loadVerse(surahIndex + 1, 1);
+        } else {
+          alert("Invalid search term. Use format 'Surah-Verse' (e.g., 2-255) or Surah name");
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>
