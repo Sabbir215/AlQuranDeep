@@ -315,6 +315,8 @@
             position: relative;
             display: inline-block;
             width: 220px;
+            flex-shrink: 1;
+            min-width: 150px;
         }
 
         #search {
@@ -349,7 +351,9 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 5px;
         }
 
         footer.nav-bar button {
@@ -362,6 +366,8 @@
             font-size: 16px;
             font-weight: 500;
             transition: all 0.3s ease;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         footer.nav-bar button:hover {
@@ -804,21 +810,26 @@
             .nav-controls {
                 gap: 5px;
                 padding: 10px;
+                flex-wrap: nowrap;
+                overflow-x: auto;
             }
 
             .nav-controls button {
-                padding: 8px 12px;
-                font-size: 14px;
-                min-width: 36px;
+                padding: 8px 10px;
+                font-size: 13px;
+                min-width: 32px;
+                flex-shrink: 0;
             }
 
             .search-container {
-                width: 160px;
+                width: 140px;
+                flex-shrink: 1;
+                min-width: 120px;
             }
 
             #search {
-                font-size: 14px;
-                padding: 8px 12px;
+                font-size: 13px;
+                padding: 7px 10px;
             }
 
             footer.nav-bar button {
@@ -901,23 +912,56 @@
             }
 
             .nav-controls {
-                gap: 3px;
-                padding: 8px;
+                gap: 2px;
+                padding: 6px;
+                flex-wrap: nowrap;
+                justify-content: space-between;
             }
 
             .nav-controls button {
-                padding: 8px 10px;
-                font-size: 13px;
-                min-width: 36px;
+                padding: 6px 8px;
+                font-size: 12px;
+                min-width: 28px;
+                flex-shrink: 0;
             }
 
             .search-container {
-                width: 130px;
+                width: 100px;
+                flex-shrink: 1;
+                min-width: 80px;
             }
 
             #search {
-                font-size: 12px;
-                padding: 6px 8px;
+                font-size: 11px;
+                padding: 5px 6px;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 360px) {
+            .nav-controls {
+                gap: 1px;
+                padding: 4px;
+            }
+
+            .nav-controls button {
+                padding: 5px 6px;
+                font-size: 11px;
+                min-width: 24px;
+            }
+
+            .search-container {
+                width: 75px;
+                min-width: 65px;
+            }
+
+            #search {
+                font-size: 10px;
+                padding: 4px 5px;
+            }
+
+            footer.nav-bar {
+                padding: 12px 5px;
             }
         }
     </style>
@@ -1047,7 +1091,7 @@
         let currentTafsir = 'en.tafisr.ibn-kathir';
         let settings = {
             nightMode: false,
-            autoplay: true,
+            autoplay: false,
             showTransliteration: true
         };
         let bookmarks = JSON.parse(localStorage.getItem('quran-bookmarks') || '[]');
@@ -1339,14 +1383,10 @@
                         currentAyah.audioUrl = audioData.data.audio;
                         audioPlayer.src = currentAyah.audioUrl;
 
-                        // Auto-play if enabled and user has interacted
+                        // Auto-play if enabled
                         if (settings.autoplay) {
                             setTimeout(() => {
-                                if (userHasInteracted) {
-                                    playAudio();
-                                } else {
-                                    showNotification('Auto-play ready! Click anywhere to enable audio.', 'info');
-                                }
+                                playAudio();
                             }, 500);
                         }
                     } else {
@@ -1527,24 +1567,6 @@
             document.getElementById("arabic").style.fontSize = fontSizes[currentSizeIndex] + "em";
         }
 
-        // User interaction detection for audio policy compliance
-        let userHasInteracted = false;
-
-        // Track user interactions to enable audio autoplay
-        function enableAudioAfterInteraction() {
-            if (!userHasInteracted) {
-                userHasInteracted = true;
-                document.removeEventListener('click', enableAudioAfterInteraction);
-                document.removeEventListener('keydown', enableAudioAfterInteraction);
-                document.removeEventListener('touchstart', enableAudioAfterInteraction);
-            }
-        }
-
-        // Add interaction listeners
-        document.addEventListener('click', enableAudioAfterInteraction, { once: false });
-        document.addEventListener('keydown', enableAudioAfterInteraction, { once: false });
-        document.addEventListener('touchstart', enableAudioAfterInteraction, { once: false });
-
         // Enhanced audio playback with better error handling
         function playAudio() {
             const audioPlayer = document.getElementById("audioPlayer");
@@ -1566,13 +1588,6 @@
             if (audioPlayer.src) {
                 audioPlayer.currentTime = 0;
 
-                // Check if user has interacted before attempting autoplay
-                if (!userHasInteracted) {
-                    resetAudioButton();
-                    showNotification('Please click anywhere on the page first, then try playing audio', 'info');
-                    return;
-                }
-
                 audioPlayer.play().then(() => {
                     // Success - update button state
                     if (playBtn) {
@@ -1580,11 +1595,6 @@
                         playBtn.disabled = false;
                         playBtn.style.opacity = '1';
                     }
-
-                    // Reset button after audio finishes
-                    audioPlayer.onended = () => {
-                        resetAudioButton();
-                    };
 
                 }).catch(err => {
                     console.error("Play method error:", err);
@@ -1865,14 +1875,18 @@
                     stopAutoPlay();
                 });
 
-                // When verse finishes, move to next verse
+                // When verse finishes, move to next verse or reset button
                 audioPlayer.onended = function () {
+                    // Always reset the audio button
+                    resetAudioButton();
+
+                    // If not auto-playing, just return after resetting the button
                     if (!isAutoPlaying) return;
 
                     // Check if we've reached the end of the surah
                     if (currentAyah.verse >= verseCounts[currentAyah.surah - 1]) {
                         stopAutoPlay();
-                        showError(`Auto-play completed: Reached end of Surah ${surahNames[currentAyah.surah - 1]}`);
+                        showNotification(`Auto-play completed: Reached end of Surah ${surahNames[currentAyah.surah - 1]}`, 'success');
                         return;
                     }
 
@@ -1893,9 +1907,9 @@
                 // No audio available, skip to next verse
                 autoPlayTimer = setTimeout(() => {
                     if (isAutoPlaying) {
-                        if (currentAyah.verse >= verseCounts[currentAyah.surah - 1]) {
+                            if (currentAyah.verse >= verseCounts[currentAyah.surah - 1]) {
                             stopAutoPlay();
-                            showError(`Auto-play completed: Reached end of Surah ${surahNames[currentAyah.surah - 1]}`);
+                            showNotification(`Auto-play completed: Reached end of Surah ${surahNames[currentAyah.surah - 1]}`, 'success');
                             return;
                         }
                         navigateVerse(1);
