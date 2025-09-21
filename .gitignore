@@ -1,0 +1,153 @@
+# AlQuranDeep - Git Ignore File
+
+# ====================================
+# macOS System Files
+# ====================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.fseventsd
+.DocumentRevisions-V100
+.TemporaryItems
+
+# ====================================
+# Windows System Files  
+# ====================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# ====================================
+# Linux System Files
+# ====================================
+*~
+.directory
+.Trash-*
+
+# ====================================
+# Development Environment
+# ====================================
+# VS Code
+.vscode/
+.history/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+.#*
+\#*#
+
+# ====================================
+# Node.js (if future dependencies added)
+# ====================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+package-lock.json
+yarn.lock
+
+# ====================================
+# Environment & Configuration
+# ====================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ====================================
+# Build & Distribution
+# ====================================
+dist/
+build/
+out/
+*.tgz
+*.tar.gz
+
+# ====================================
+# Cache & Temporary Files
+# ====================================
+.cache/
+.parcel-cache/
+.sass-cache/
+*.tmp
+*.temp
+tmp/
+temp/
+
+# ====================================
+# Logs
+# ====================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+lerna-debug.log*
+
+# ====================================
+# Runtime & Process Files
+# ====================================
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ====================================
+# Project Specific
+# ====================================
+# Backup files
+*.bak
+*.backup
+*.orig
+*.rej
+
+# Archive folder is kept for reference
+# Archive/
+
+# Test coverage (if testing is added)
+coverage/
+.nyc_output/
+*.lcov
+
+# Documentation builds (if auto-generated docs added)
+docs/_build/
+
+# ====================================
+# Browser & Extension Files
+# ====================================
+.webloc
+
+# ====================================
+# Audio/Media Cache (potential future additions)
+# ====================================
+*.mp3.cache
+*.ogg.cache
+audio-cache/
+media-cache/

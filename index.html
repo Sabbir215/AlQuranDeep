@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Deep Al-Quran - Understand the Quran Deeply</title>
+    <title>AlQuranDeep - Understand the Quran Deeply</title>
     <style>
         :root {
             --primary-color: #1a3c34;
@@ -525,6 +525,190 @@
             border-radius: 8px;
             border-left: 4px solid #f44336;
             text-align: left;
+        }
+
+        /* Enhanced Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            max-width: 400px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .notification-info {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .notification-success {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        .notification-warning {
+            background: linear-gradient(135deg, #fff3e0, #ffcc02);
+            color: #ef6c00;
+            border-left: 4px solid #ff9800;
+        }
+
+        .notification-error {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        .notification-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .notification-message {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.2s, background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        /* Smooth Transitions for Interactive Elements */
+        button,
+        .play-btn,
+        .nav-btn {
+            transition: all 0.2s ease;
+        }
+
+        button:hover,
+        .play-btn:hover,
+        .nav-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active,
+        .play-btn:active,
+        .nav-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animation Keyframes */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Night Mode for Notifications */
+        body.night-mode .notification-info {
+            background: linear-gradient(135deg, #1a237e, #3f51b5);
+            color: #e3f2fd;
+        }
+
+        body.night-mode .notification-success {
+            background: linear-gradient(135deg, #1b5e20, #4caf50);
+            color: #e8f5e8;
+        }
+
+        body.night-mode .notification-warning {
+            background: linear-gradient(135deg, #e65100, #ff9800);
+            color: #fff3e0;
+        }
+
+        body.night-mode .notification-error {
+            background: linear-gradient(135deg, #b71c1c, #f44336);
+            color: #ffebee;
         }
 
         /* Night Mode */
@@ -1128,13 +1312,25 @@
                 });
         }
 
-        // Load a specific verse
+        // Load a specific verse with enhanced loading states
         function loadVerse(surah, verse) {
-            document.getElementById("loading").style.display = "block";
+            // Show loading indicator
+            const loadingElement = document.getElementById("loading");
+            const mainContent = document.querySelector("main");
+
+            loadingElement.style.display = "block";
+            if (mainContent) mainContent.style.opacity = "0.7";
+
+            // Add loading states to navigation buttons
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                showLoading(btn, '');
+            });
+
             document.getElementById("search").value = `${surah}-${verse}`;
             currentAyah = { surah, verse };
 
-            // Load audio
+            // Load audio with loading feedback
             fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/ar.alafasy`)
                 .then(response => response.json())
                 .then(audioData => {
@@ -1143,9 +1339,15 @@
                         currentAyah.audioUrl = audioData.data.audio;
                         audioPlayer.src = currentAyah.audioUrl;
 
-                        // Auto-play if enabled
+                        // Auto-play if enabled and user has interacted
                         if (settings.autoplay) {
-                            setTimeout(() => playAudio(), 500);
+                            setTimeout(() => {
+                                if (userHasInteracted) {
+                                    playAudio();
+                                } else {
+                                    showNotification('Auto-play ready! Click anywhere to enable audio.', 'info');
+                                }
+                            }, 500);
                         }
                     } else {
                         console.warn(`No audio found for Surah ${surah}, Verse ${verse}`);
@@ -1207,11 +1409,37 @@
                         }
                     });
 
-                    document.getElementById("loading").style.display = "none";
+                    // Enhanced loading cleanup
+                    const loadingElement = document.getElementById("loading");
+                    const mainContent = document.querySelector("main");
+                    const navButtons = document.querySelectorAll('.nav-btn');
+
+                    loadingElement.style.display = "none";
+                    if (mainContent) mainContent.style.opacity = "1";
+
+                    // Restore navigation buttons
+                    navButtons.forEach(btn => {
+                        hideLoading(btn);
+                    });
+
                     loadTafsir();
                 })
                 .catch((err) => {
                     console.error("Error in verse loading process:", err);
+
+                    // Clean up loading states on error
+                    const loadingElement = document.getElementById("loading");
+                    const mainContent = document.querySelector("main");
+                    const navButtons = document.querySelectorAll('.nav-btn');
+
+                    loadingElement.style.display = "none";
+                    if (mainContent) mainContent.style.opacity = "1";
+
+                    navButtons.forEach(btn => {
+                        hideLoading(btn);
+                    });
+
+                    showNotification("Error loading verse. Please try again.", 'error');
                     fallbackWordByWord(surah, verse);
                 });
         }
@@ -1256,14 +1484,37 @@
                         tbody.appendChild(row);
                     }
 
-                    document.getElementById("loading").style.display = "none";
+                    // Enhanced loading cleanup for fallback
+                    const loadingElement = document.getElementById("loading");
+                    const mainContent = document.querySelector("main");
+                    const navButtons = document.querySelectorAll('.nav-btn');
+
+                    loadingElement.style.display = "none";
+                    if (mainContent) mainContent.style.opacity = "1";
+
+                    navButtons.forEach(btn => {
+                        hideLoading(btn);
+                    });
+
                     loadTafsir();
                     return null;
                 })
                 .catch((err) => {
                     console.error("Error in fallback word-by-word:", err);
-                    document.getElementById("loading").style.display = "none";
-                    showError("Error loading verse data. Please try again later.");
+
+                    // Clean up loading states
+                    const loadingElement = document.getElementById("loading");
+                    const mainContent = document.querySelector("main");
+                    const navButtons = document.querySelectorAll('.nav-btn');
+
+                    loadingElement.style.display = "none";
+                    if (mainContent) mainContent.style.opacity = "1";
+
+                    navButtons.forEach(btn => {
+                        hideLoading(btn);
+                    });
+
+                    showNotification("Error loading verse data. Please try again later.", 'error');
                     return null;
                 });
         }
@@ -1276,23 +1527,88 @@
             document.getElementById("arabic").style.fontSize = fontSizes[currentSizeIndex] + "em";
         }
 
-        // Audio playback
+        // User interaction detection for audio policy compliance
+        let userHasInteracted = false;
+
+        // Track user interactions to enable audio autoplay
+        function enableAudioAfterInteraction() {
+            if (!userHasInteracted) {
+                userHasInteracted = true;
+                document.removeEventListener('click', enableAudioAfterInteraction);
+                document.removeEventListener('keydown', enableAudioAfterInteraction);
+                document.removeEventListener('touchstart', enableAudioAfterInteraction);
+            }
+        }
+
+        // Add interaction listeners
+        document.addEventListener('click', enableAudioAfterInteraction, { once: false });
+        document.addEventListener('keydown', enableAudioAfterInteraction, { once: false });
+        document.addEventListener('touchstart', enableAudioAfterInteraction, { once: false });
+
+        // Enhanced audio playback with better error handling
         function playAudio() {
             const audioPlayer = document.getElementById("audioPlayer");
+            const playBtn = document.querySelector('.play-btn');
+
+            // Add loading state
+            if (playBtn) {
+                playBtn.disabled = true;
+                playBtn.innerHTML = '⏳';
+                playBtn.style.opacity = '0.6';
+            }
 
             audioPlayer.onerror = function (e) {
                 console.error("Audio playback error:", e);
-                showError(`Unable to play audio for Surah ${currentAyah.surah}, Verse ${currentAyah.verse}`);
+                resetAudioButton();
+                showNotification(`Unable to play audio for Surah ${currentAyah.surah}, Verse ${currentAyah.verse}`, 'warning');
             };
 
             if (audioPlayer.src) {
                 audioPlayer.currentTime = 0;
-                audioPlayer.play().catch(err => {
+
+                // Check if user has interacted before attempting autoplay
+                if (!userHasInteracted) {
+                    resetAudioButton();
+                    showNotification('Please click anywhere on the page first, then try playing audio', 'info');
+                    return;
+                }
+
+                audioPlayer.play().then(() => {
+                    // Success - update button state
+                    if (playBtn) {
+                        playBtn.innerHTML = '🔊';
+                        playBtn.disabled = false;
+                        playBtn.style.opacity = '1';
+                    }
+
+                    // Reset button after audio finishes
+                    audioPlayer.onended = () => {
+                        resetAudioButton();
+                    };
+
+                }).catch(err => {
                     console.error("Play method error:", err);
-                    showError(`Audio playback failed: ${err.message}`);
+                    resetAudioButton();
+
+                    // More user-friendly error handling
+                    if (err.name === 'NotAllowedError') {
+                        showNotification('Audio autoplay prevented by browser. Click the play button to start audio.', 'info');
+                    } else {
+                        showNotification(`Audio unavailable: ${err.message}`, 'warning');
+                    }
                 });
             } else {
-                showError("No audio available for this verse.");
+                resetAudioButton();
+                showNotification("No audio available for this verse.", 'info');
+            }
+        }
+
+        function resetAudioButton() {
+            const playBtn = document.querySelector('.play-btn');
+            if (playBtn) {
+                playBtn.innerHTML = '▶️';
+                playBtn.disabled = false;
+                playBtn.style.opacity = '1';
             }
         }
 
@@ -1593,24 +1909,74 @@
             }
         }
 
-        // Error handling
-        function showError(message) {
-            // Create or update error message
-            let errorDiv = document.getElementById('error-message');
-            if (!errorDiv) {
-                errorDiv = document.createElement('div');
-                errorDiv.id = 'error-message';
-                errorDiv.className = 'error-message';
-                document.querySelector('main').appendChild(errorDiv);
+        // Enhanced notification system with better UX
+        function showNotification(message, type = 'info', duration = 4000) {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notif => {
+                notif.style.animation = 'slideOut 0.3s ease-in-out forwards';
+                setTimeout(() => notif.remove(), 300);
+            });
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+
+            // Set content and icon based on type
+            let icon = '';
+            switch (type) {
+                case 'success': icon = '✅'; break;
+                case 'warning': icon = '⚠️'; break;
+                case 'error': icon = '❌'; break;
+                case 'info':
+                default: icon = 'ℹ️'; break;
             }
 
-            errorDiv.innerHTML = message;
-            errorDiv.style.display = 'block';
+            notification.innerHTML = `
+                <span class="notification-icon">${icon}</span>
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+            `;
 
-            // Auto-hide after 5 seconds
+            // Add to DOM
+            document.body.appendChild(notification);
+
+            // Trigger slide-in animation
+            requestAnimationFrame(() => {
+                notification.style.animation = 'slideIn 0.3s ease-out forwards';
+            });
+
+            // Auto-hide after duration
             setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideOut 0.3s ease-in-out forwards';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, duration);
+        }
+
+        // Backward compatibility - replace showError calls
+        function showError(message) {
+            showNotification(message, 'error');
+        }
+
+        // Loading state management
+        function showLoading(element, text = 'Loading...') {
+            if (element) {
+                element.dataset.originalContent = element.innerHTML;
+                element.innerHTML = `<span class="loading-spinner"></span> ${text}`;
+                element.disabled = true;
+                element.style.opacity = '0.7';
+            }
+        }
+
+        function hideLoading(element) {
+            if (element && element.dataset.originalContent) {
+                element.innerHTML = element.dataset.originalContent;
+                element.disabled = false;
+                element.style.opacity = '1';
+                delete element.dataset.originalContent;
+            }
         }
 
         // Close panels when clicking outside
