@@ -971,7 +971,8 @@
     <div class="container">
         <header>
             <div class="header-controls left">
-                <button onclick="toggleAutoPlay()" title="Auto-play Surah" id="autoplay-btn">🔄</button>
+                <button onclick="toggleAutoPlay()" title="Surah Auto-advance (play verses sequentially)"
+                    id="autoplay-btn">🔄</button>
                 <button onclick="toggleSettings()" title="Settings">⚙️</button>
             </div>
             <div class="header-controls">
@@ -1044,7 +1045,8 @@
                 <div class="toggle-switch" id="night-mode-toggle" onclick="toggleNightMode()"></div>
             </label>
             <label>
-                Auto-play Audio
+                Audio Autoplay <small style="font-weight:normal; color: #666; display:block;">(play audio automatically
+                    when a verse loads)</small>
                 <div class="toggle-switch" id="autoplay-toggle" onclick="toggleAutoplay()"></div>
             </label>
             <label>
@@ -1907,7 +1909,7 @@
                 // No audio available, skip to next verse
                 autoPlayTimer = setTimeout(() => {
                     if (isAutoPlaying) {
-                            if (currentAyah.verse >= verseCounts[currentAyah.surah - 1]) {
+                        if (currentAyah.verse >= verseCounts[currentAyah.surah - 1]) {
                             stopAutoPlay();
                             showNotification(`Auto-play completed: Reached end of Surah ${surahNames[currentAyah.surah - 1]}`, 'success');
                             return;
