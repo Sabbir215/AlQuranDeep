@@ -1,0 +1,578 @@
+D
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quran Reader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      overflow-x: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header {
+      background-color: #1a3c34;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .bismillah {
+      max-width: 70%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      filter: drop-shadow(2px 2px 4px #000);
+    }
+
+    .surah-info {
+      font-size: 1.3em;
+      font-family: 'Roboto', sans-serif;
+      color: #e0e0e0;
+      margin-top: 10px;
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      text-align: center;
+      margin-top: 120px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #arabic {
+      cursor: pointer;
+      font-family: 'Amiri', serif;
+      font-size: 1.5em;
+      color: #1a3c34;
+      line-height: 1.8;
+      transition: font-size 0.3s ease;
+    }
+
+    .pronunciation {
+      margin: 15px 0;
+      font-size: 1.5em;
+    }
+
+    .pronunciation span {
+      margin-right: 10px;
+    }
+
+    .pronunciation button {
+      background: #ffd700;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .word-by-word {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .word-by-word td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      font-size: 1.5em;
+    }
+
+    .word-by-word td:first-child {
+      font-family: 'Amiri', serif;
+      color: #1a3c34;
+    }
+
+    .tafsir {
+      margin: 20px;
+    }
+
+    .tafsir button {
+      background: #1a3c34;
+      color: #fff;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #tafsir-text {
+      font-size: 1.5em;
+      line-height: 1.6;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #1a3c34;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-bar button,
+    .nav-bar input {
+      margin: 0 8px;
+      padding: 8px 15px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .nav-bar button {
+      background: #ffd700;
+      color: #1a3c34;
+      cursor: pointer;
+    }
+
+    .nav-bar input {
+      width: 80px;
+      text-align: center;
+    }
+
+    .loading,
+    .error {
+      margin: 20px;
+      font-size: 1.2em;
+    }
+
+    .loading {
+      color: #1a3c34;
+    }
+
+    .error {
+      color: #d32f2f;
+      background: #ffebee;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Bismillah_calligraphy.svg"
+        alt="Bismillahirrahmanirrahim" class="bismillah" />
+      <div class="surah-info" id="surah-info">
+        Surah Al-Fatiha | Verse 1 | Ruku 1
+      </div>
+    </header>
+    <main class="content">
+      <div id="loading" class="loading" style="display: none;">
+        Loading...
+      </div>
+      <div id="error" class="error" style="display: none;"></div>
+      <h1 id="arabic" onclick="cycleFontSize()">
+        بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+      </h1>
+      <div class="pronunciation" id="pronunciation">
+        <span>Bismillāhir-Raḥmānir-Raḥīm</span>
+        <button onclick="playAudio()">▶️</button>
+      </div>
+      <table class="word-by-word" id="word-by-word">
+        <tr>
+          <td>بِسْمِ</td>
+          <td>Bismi</td>
+          <td>In the name</td>
+        </tr>
+      </table>
+      <div class="tafsir">
+        <button onclick="toggleTafsir()">Show/Hide Tafsir</button>
+        <p id="tafsir-text">Tafsir will be loaded here.</p>
+      </div>
+    </main>
+    <footer class="nav-bar">
+      <button onclick="prevSurah()">
+        <<<< /button>
+          <button onclick="prevRuku()">
+            <<< /button>
+              <button onclick="prevVerse()">
+                << /button>
+                  <input type="text" id="search" value="1-1" onkeydown="if(event.key === 'Enter') navigateToVerse()" />
+                  <button onclick="nextVerse()">></button>
+                  <button onclick="nextRuku()">>></button>
+                  <button onclick="nextSurah()">>>></button>
+    </footer>
+  </div>
+  <script>
+    let fontSizes = [1.5, 2, 2.5]; // em units: Small, Medium, Large
+    let currentSizeIndex = 0; // Default: Small
+    let currentSurah = 1;
+    let currentAyah = 1;
+    let audioUrl = "";
+
+    // Complete verse counts for all 114 Surahs
+    const surahVerseCount = {
+      1: 7,
+      2: 286,
+      3: 200,
+      4: 176,
+      5: 120,
+      6: 165,
+      7: 206,
+      8: 75,
+      9: 129,
+      10: 109,
+      11: 123,
+      12: 111,
+      13: 43,
+      14: 52,
+      15: 99,
+      16: 128,
+      17: 111,
+      18: 110,
+      19: 98,
+      20: 135,
+      21: 112,
+      22: 78,
+      23: 118,
+      24: 64,
+      25: 77,
+      26: 227,
+      27: 93,
+      28: 88,
+      29: 69,
+      30: 60,
+      31: 34,
+      32: 30,
+      33: 73,
+      34: 54,
+      35: 45,
+      36: 83,
+      37: 182,
+      38: 88,
+      39: 75,
+      40: 85,
+      41: 54,
+      42: 53,
+      43: 89,
+      44: 59,
+      45: 37,
+      46: 35,
+      47: 38,
+      48: 29,
+      49: 18,
+      50: 45,
+      51: 60,
+      52: 49,
+      53: 62,
+      54: 55,
+      55: 78,
+      56: 96,
+      57: 29,
+      58: 22,
+      59: 24,
+      60: 13,
+      61: 14,
+      62: 11,
+      63: 11,
+      64: 18,
+      65: 12,
+      66: 12,
+      67: 30,
+      68: 52,
+      69: 52,
+      70: 44,
+      71: 28,
+      72: 28,
+      73: 20,
+      74: 56,
+      75: 40,
+      76: 31,
+      77: 50,
+      78: 40,
+      79: 46,
+      80: 42,
+      81: 29,
+      82: 19,
+      83: 36,
+      84: 25,
+      85: 22,
+      86: 17,
+      87: 19,
+      88: 26,
+      89: 30,
+      90: 20,
+      91: 15,
+      92: 21,
+      93: 11,
+      94: 8,
+      95: 8,
+      96: 19,
+      97: 5,
+      98: 8,
+      99: 8,
+      100: 11,
+      101: 11,
+      102: 8,
+      103: 3,
+      104: 9,
+      105: 5,
+      106: 4,
+      107: 7,
+      108: 3,
+      109: 6,
+      110: 3,
+      111: 5,
+      112: 4,
+      113: 5,
+      114: 6,
+    };
+
+    // Partial Ruku mapping (expandable)
+    const rukuMap = {
+      1: [1], // Al-Fatiha
+      2: [
+        1, 2, 8, 17, 25, 36, 44, 51, 61, 68, 75, 82, 88, 94, 100, 106, 113,
+        121, 127, 132, 137, 141, 148, 153, 159, 164, 169, 174, 179, 184, 189,
+        194, 199, 204, 209, 214, 219, 224, 229, 234,
+      ], // Al-Baqarah
+    };
+
+    // UI Helpers
+    function showLoading() {
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("error").style.display = "none";
+    }
+
+    function hideLoading() {
+      document.getElementById("loading").style.display = "none";
+    }
+
+    function showError(message) {
+      document.getElementById("error").textContent = message;
+      document.getElementById("error").style.display = "block";
+      hideLoading();
+    }
+
+    async function fetchVerse(surah, ayah) {
+      showLoading();
+      try {
+        // Fetch verse data
+        const verseResponse = await fetch(
+          `https://api.quran.com/api/v4/verses/by_key/${surah}:${ayah}?language=en&words=true&translations=131&tafsirs=169`
+        );
+        if (!verseResponse.ok)
+          throw new Error(`Verse fetch failed: ${verseResponse.status}`);
+        const verseData = await verseResponse.json();
+        const verse = verseData.verse;
+
+        // Fetch audio URL (Mishary Alafasy, reciter ID 7)
+        const audioResponse = await fetch(
+          `https://api.quran.com/api/v4/recitations/7/by_ayah/${surah}:${ayah}`
+        );
+        if (!audioResponse.ok)
+          throw new Error(`Audio fetch failed: ${audioResponse.status}`);
+        const audioData = await audioResponse.json();
+        audioUrl = audioData.audio_files[0].url; // Direct URL from Quran.com
+
+        // Update Arabic text
+        document.getElementById("arabic").textContent = verse.text_uthmani;
+
+        // Update pronunciation (transliteration)
+        const transliteration = verse.words
+          .map((word) => word.transliteration.text || "")
+          .join(" ");
+        document.getElementById(
+          "pronunciation"
+        ).innerHTML = `<span>${transliteration}</span><button onclick="playAudio()">▶️</button>`;
+
+        // Update word-by-word table
+        let wordTable = "";
+        verse.words.forEach((word) => {
+          wordTable += `<tr><td>${word.text_uthmani}</td><td>${word.transliteration.text || "N/A"
+            }</td><td>${word.translation.text || "N/A"}</td></tr>`;
+        });
+        document.getElementById("word-by-word").innerHTML = wordTable;
+
+        // Update tafsir
+        const tafsir = verse.tafsirs[0]?.text || "Tafsir not available";
+        document.getElementById("tafsir-text").textContent = tafsir;
+
+        // Update surah info
+        const ruku = calculateRuku(surah, ayah);
+        const surahNameResponse = await fetch(
+          `https://api.quran.com/api/v4/chapters/${surah}?language=en`
+        );
+        const surahNameData = await surahNameResponse.json();
+        document.getElementById(
+          "surah-info"
+        ).textContent = `Surah ${surahNameData.chapter.name_simple} | Verse ${ayah} | Ruku ${ruku}`;
+
+        // Sync font size
+        const size = `${fontSizes[currentSizeIndex]}em`;
+        document
+          .querySelectorAll(
+            "#arabic, .pronunciation span, .word-by-word td, #tafsir-text"
+          )
+          .forEach((el) => (el.style.fontSize = size));
+
+        document.getElementById("search").value = `${surah}-${ayah}`;
+        hideLoading();
+      } catch (error) {
+        console.error("Error fetching verse:", error);
+        showError(
+          "Failed to load verse or audio. Please check your connection and try again."
+        );
+      }
+    }
+
+    function calculateRuku(surah, ayah) {
+      const rukuStarts = rukuMap[surah] || [1];
+      let ruku = 1;
+      for (let start of rukuStarts) {
+        if (ayah >= start) ruku = rukuStarts.indexOf(start) + 1;
+        else break;
+      }
+      return ruku;
+    }
+
+    function cycleFontSize() {
+      currentSizeIndex = (currentSizeIndex + 1) % fontSizes.length;
+      const size = `${fontSizes[currentSizeIndex]}em`;
+      document
+        .querySelectorAll(
+          "#arabic, .pronunciation span, .word-by-word td, #tafsir-text"
+        )
+        .forEach((el) => (el.style.fontSize = size));
+    }
+
+    function playAudio() {
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        audio.play().catch((error) => {
+          console.error("Audio playback failed:", error);
+          showError("Audio playback failed: " + error.message);
+        });
+      } else {
+        showError("Audio not available for this verse.");
+      }
+    }
+
+    function toggleTafsir() {
+      const tafsir = document.getElementById("tafsir-text");
+      tafsir.style.display =
+        tafsir.style.display === "none" ? "block" : "none";
+    }
+
+    function prevVerse() {
+      if (currentAyah > 1) {
+        currentAyah--;
+        fetchVerse(currentSurah, currentAyah);
+      } else if (currentSurah > 1) {
+        currentSurah--;
+        currentAyah = surahVerseCount[currentSurah];
+        fetchVerse(currentSurah, currentAyah);
+      }
+    }
+
+    function nextVerse() {
+      if (currentAyah < surahVerseCount[currentSurah]) {
+        currentAyah++;
+        fetchVerse(currentSurah, currentAyah);
+      } else if (currentSurah < 114) {
+        currentSurah++;
+        currentAyah = 1;
+        fetchVerse(currentSurah, currentAyah);
+      }
+    }
+
+    function prevRuku() {
+      const rukuStarts = rukuMap[currentSurah] || [1];
+      const currentRukuIndex =
+        rukuStarts.findIndex((start) => start > currentAyah) - 1 ||
+        rukuStarts.length - 1;
+      if (currentRukuIndex > 0) {
+        currentAyah = rukuStarts[currentRukuIndex - 1];
+        fetchVerse(currentSurah, currentAyah);
+      } else if (currentSurah > 1) {
+        currentSurah--;
+        currentAyah =
+          rukuMap[currentSurah]?.slice(-1)[0] ||
+          surahVerseCount[currentSurah];
+        fetchVerse(currentSurah, currentAyah);
+      }
+    }
+
+    function nextRuku() {
+      const rukuStarts = rukuMap[currentSurah] || [1];
+      const nextRukuStart = rukuStarts.find((start) => start > currentAyah);
+      if (nextRukuStart) {
+        currentAyah = nextRukuStart;
+        fetchVerse(currentSurah, currentAyah);
+      } else if (currentSurah < 114) {
+        currentSurah++;
+        currentAyah = rukuMap[currentSurah]?.[0] || 1;
+        fetchVerse(currentSurah, currentAyah);
+      }
+    }
+
+    function prevSurah() {
+      if (currentSurah > 1) {
+        currentSurah--;
+        currentAyah = 1;
+        fetchVerse(currentSurah, currentAyah);
+      }
+    }
+
+    function nextSurah() {
+      if (currentSurah < 114) {
+        currentSurah++;
+        currentAyah = 1;
+        fetchVerse(currentSurah, currentAyah);
+      }
+    }
+
+    function navigateToVerse() {
+      const input = document.getElementById("search").value.trim();
+      const [surahStr, ayahStr] = input.split("-");
+      const surah = parseInt(surahStr, 10);
+      const ayah = parseInt(ayahStr, 10);
+      if (
+        isNaN(surah) ||
+        isNaN(ayah) ||
+        surah < 1 ||
+        surah > 114 ||
+        ayah < 1 ||
+        ayah > surahVerseCount[surah]
+      ) {
+        showError("Invalid Surah or Ayah. Use format like 1-1.");
+      } else {
+        currentSurah = surah;
+        currentAyah = ayah;
+        fetchVerse(surah, ayah);
+      }
+    }
+
+    // Initial load
+    fetchVerse(currentSurah, currentAyah);
+  </script>
+</body>
+
+</html>

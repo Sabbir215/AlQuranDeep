@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quran Reader</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+        /* Reset defaults */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #1a3c34;
+            color: white;
+            text-align: center;
+            padding: 8px 5px;
+            /* Reduced padding */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .bismillah {
+            font-size: 2em;
+            color: #ffd700;
+            /* Gold */
+            text-shadow: 1px 1px 3px #000;
+            display: inline-block;
+            margin: 0 auto;
+            /* Center horizontally */
+        }
+
+        .surah-info {
+            font-size: 1.2em;
+            margin-top: 5px;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 100px;
+            /* Ensure content isn't hidden by nav bar */
+            text-align: center;
+        }
+
+        #arabic {
+            cursor: pointer;
+            font-size: 1.5em;
+            /* Default: Small */
+        }
+
+        .pronunciation {
+            margin: 10px 0;
+        }
+
+        .word-by-word {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+
+        .word-by-word td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .tafsir {
+            margin: 20px;
+            text-align: left;
+        }
+
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #1a3c34;
+            padding: 10px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .nav-bar button,
+        .nav-bar input {
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+            <div class="surah-info">Surah Al-Fatiha | Verse 1 | Ruku 1</div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content">
+            <h1 id="arabic" onclick="cycleFontSize()">
+                بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+            </h1>
+            <div class="pronunciation">
+                <span>Bismillāhir-Raḥmānir-Raḥīm</span>
+                <button onclick="playAudio('https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/1')">
+                    ▶️
+                </button>
+            </div>
+            <table class="word-by-word" id="word-table">
+                <tr>
+                    <td>بِسْمِ</td>
+                    <td>Bismi</td>
+                    <td>In the name</td>
+                </tr>
+                <tr>
+                    <td>ٱللَّهِ</td>
+                    <td>Allāhi</td>
+                    <td>of Allah</td>
+                </tr>
+                <tr>
+                    <td>ٱللَّهِ</td>
+                    <td>Ar-Raḥmāni</td>
+                    <td>the Most Gracious</td>
+                </tr>
+                <tr>
+                    <td>ٱللَّهِ</td>
+                    <td>Ar-Raḥīmi</td>
+                    <td>the Most Merciful</td>
+                </tr>
+            </table>
+            <div class="tafsir">
+                <button onclick="toggleTafsir()">Show/Hide Tafsir</button>
+                <p id="tafsir-text" style="display: none;">
+                    This opening verse, the Basmalah, is a declaration of intent and
+                    invocation that precedes every chapter of the Quran except Surah
+                    At-Tawbah. 'Bismi' signifies starting with Allah’s remembrance.
+                    'Allāh' is His unique name. 'Ar-Raḥmān' reflects universal mercy,
+                    'Ar-Raḥīm' denotes specific mercy for believers. Per Ibn Kathir,
+                    it’s a Sunnah before acts, symbolizing divine reliance.
+                </p>
+            </div>
+        </main>
+
+        <!-- Navigation Bar -->
+        <footer class="nav-bar">
+            <button onclick="navigateSurah(-1)">
+                <<<< /button>
+                    <button onclick="navigateRuku(-1)">
+                        <<< /button>
+                            <button onclick="navigateVerse(-1)">
+                                << /button>
+                                    <input type="text" id="search" value="1-1"
+                                        onkeydown="if(event.key === 'Enter') navigateToVerse()" />
+                                    <button onclick="navigateVerse(1)">></button>
+                                    <button onclick="navigateRuku(1)">>></button>
+                                    <button onclick="navigateSurah(1)">>>></button>
+        </footer>
+    </div>
+
+    <script>
+        let currentAyah = { surah: 1, verse: 1 };
+        let surahNames = [];
+        let verseCounts = [];
+
+        // Fetch Surah metadata
+        fetch('https://api.alquran.cloud/v1/meta')
+            .then(response => response.json())
+            .then(data => {
+                surahNames = data.data.surahs.references.map(ref => ref.englishName);
+                verseCounts = data.data.surahs.references.map(ref => ref.numberOfAyahs);
+                loadVerse(currentAyah.surah, currentAyah.verse);
+            });
+
+        // Load verse data along with dynamic word-by-word translation
+        function loadVerse(surah, verse) {
+            Promise.all([
+                fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/ar`),
+                fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/en.transliteration`),
+                fetch(`https://api.alquran.cloud/v1/ayah/${surah}:${verse}/en.sahih`)
+            ])
+                .then(responses => Promise.all(responses.map(res => res.json())))
+                .then(([arabicData, translitData, transData]) => {
+                    document.getElementById('arabic').innerText = arabicData.data.text;
+                    // Update the word-by-word table dynamically:
+                    let words = arabicData.data.text.split(' ').map((word, i) => ({
+                        arabic: word,
+                        translit: translitData.data.text.split(' ')[i] || '',
+                        trans: transData.data.text.split(' ')[i] || ''
+                    }));
+                    let table = document.getElementById('word-table');
+                    table.innerHTML = words
+                        .map(w => `<tr><td>${w.arabic}</td><td>${w.translit}</td><td>${w.trans}</td></tr>`)
+                        .join('');
+                    document.querySelector('.surah-info').innerText = `Surah ${surahNames[surah - 1]} | Verse ${verse}`;
+                    currentAyah = {
+                        surah,
+                        verse,
+                        audioUrl: `https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/${arabicData.data.number}`
+                    };
+                    document.getElementById('search').value = `${surah}-${verse}`;
+                })
+                .catch(err => console.error('Error fetching data:', err));
+        }
+
+        // Play audio (using the URL from the API)
+        function playAudio(url) {
+            new Audio(url).play();
+        }
+
+        // Toggle the display of the Tafsir text
+        function toggleTafsir() {
+            const tafsirText = document.getElementById('tafsir-text');
+            tafsirText.style.display = tafsirText.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Navigate to a specific verse based on the search input
+        function navigateToVerse() {
+            let input = document.getElementById('search').value.split('-');
+            let surah = parseInt(input[0]);
+            let verse = parseInt(input[1]);
+            if (surah >= 1 && surah <= 114 && verse >= 1 && verse <= verseCounts[surah - 1]) {
+                loadVerse(surah, verse);
+            } else {
+                alert('Invalid Surah or Verse number');
+            }
+        }
+
+        // Navigate previous/next verse
+        function navigateVerse(direction) {
+            let newVerse = currentAyah.verse + direction;
+            let newSurah = currentAyah.surah;
+            if (newVerse < 1) {
+                newSurah--;
+                if (newSurah < 1) return;
+                newVerse = verseCounts[newSurah - 1];
+            } else if (newVerse > verseCounts[currentAyah.surah - 1]) {
+                newSurah++;
+                if (newSurah > 114) return;
+                newVerse = 1;
+            }
+            loadVerse(newSurah, newVerse);
+        }
+
+        // Navigate previous/next Surah
+        function navigateSurah(direction) {
+            let newSurah = currentAyah.surah + direction;
+            if (newSurah >= 1 && newSurah <= 114) {
+                loadVerse(newSurah, 1);
+            }
+        }
+
+        // Font size cycling: Small, Medium, Large
+        const fontSizes = ["1.5em", "2em", "2.5em"];
+        let currentFontIndex = 0;
+        function cycleFontSize() {
+            currentFontIndex = (currentFontIndex + 1) % fontSizes.length;
+            document.getElementById('arabic').style.fontSize = fontSizes[currentFontIndex];
+        }
+    </script>
+</body>
+
+</html>
