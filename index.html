@@ -207,6 +207,51 @@
             flex-wrap: wrap;
         }
 
+        .tafsir-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            flex-wrap: nowrap;
+        }
+
+        .tafsir-label {
+            font-weight: bold;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+
+        .language-select {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 2px solid var(--table-border);
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            min-width: 100px;
+            max-width: 120px;
+        }
+
+        .tafsir-select {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 2px solid var(--table-border);
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .tafsir-toggle {
+            padding: 8px 16px;
+            font-size: 14px;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+
         .tafsir-selector {
             display: flex;
             align-items: center;
@@ -608,6 +653,28 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+
+            .tafsir-row {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .tafsir-label {
+                width: 100%;
+                text-align: left;
+                margin-bottom: 5px;
+            }
+
+            .language-select,
+            .tafsir-select {
+                min-width: auto;
+                flex: 1;
+            }
+
+            .tafsir-toggle {
+                width: 100%;
+                margin-top: 10px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -717,15 +784,23 @@
 
             <div class="tafsir">
                 <div class="tafsir-controls">
-                    <div class="tafsir-selector">
-                        <label for="tafsir-select"><strong>Select Tafsir:</strong></label>
-                        <select id="tafsir-select" onchange="loadTafsir()">
-                            <option value="169">Ibn Kathir (English)</option>
-                            <option value="171">Tafsir al-Jalalayn (English)</option>
-                            <option value="173">Al-Wahidi's Reasons for Revelation (English)</option>
+                    <div class="tafsir-row">
+                        <label class="tafsir-label"><strong>Tafsir:</strong></label>
+                        <select id="tafsir-language" class="language-select" onchange="updateTafsirOptions()">
+                            <option value="en" selected>English</option>
+                            <option value="ar">Arabic</option>
+                            <option value="bn">Bengali</option>
+                            <option value="ur">Urdu</option>
+                            <option value="ru">Russian</option>
+                            <option value="kurd">Kurdish</option>
                         </select>
+                        <select id="tafsir-select" class="tafsir-select" onchange="loadTafsir()">
+                            <option value="169">Ibn Kathir (Abridged)</option>
+                            <option value="168">Ma'arif al-Qur'an</option>
+                            <option value="817">Tazkirul Quran</option>
+                        </select>
+                        <button class="play-btn tafsir-toggle" onclick="toggleTafsir()">Show/Hide</button>
                     </div>
-                    <button class="play-btn" onclick="toggleTafsir()">Show/Hide Tafsir</button>
                 </div>
                 <div id="tafsir-text" class="tafsir-content" style="display: none">
                     Loading tafsir...
@@ -788,7 +863,7 @@
         let currentTafsir = 'en.tafisr.ibn-kathir';
         let settings = {
             nightMode: false,
-            autoplay: false,
+            autoplay: true,
             showTransliteration: true
         };
         let bookmarks = JSON.parse(localStorage.getItem('quran-bookmarks') || '[]');
@@ -845,6 +920,7 @@
                     verseCounts = data.data.surahs.references.map((ref) => ref.numberOfAyahs);
                     loadVerse(currentAyah.surah, currentAyah.verse);
                     populateDatalist();
+                    updateTafsirOptions(); // Initialize tafsir options
                 })
                 .catch((err) => {
                     console.error("Error fetching metadata:", err);
@@ -857,6 +933,7 @@
                     verseCounts = [7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60];
                     loadVerse(currentAyah.surah, currentAyah.verse);
                     populateDatalist();
+                    updateTafsirOptions(); // Initialize tafsir options
                 });
         }
 
@@ -905,33 +982,99 @@
             }
         }
 
+        // Update tafsir options based on selected language
+        function updateTafsirOptions() {
+            const language = document.getElementById('tafsir-language').value;
+            const tafsirSelect = document.getElementById('tafsir-select');
+
+            // Clear existing options
+            tafsirSelect.innerHTML = '';
+
+            if (language === 'en') {
+                // English tafsirs from Quran.com API
+                tafsirSelect.innerHTML = `
+                    <option value="169">Ibn Kathir (Abridged)</option>
+                    <option value="168">Ma'arif al-Qur'an</option>
+                    <option value="817">Tazkirul Quran (Wahiduddin Khan)</option>
+                `;
+            } else if (language === 'ar') {
+                // Arabic tafsirs from AlQuran Cloud API
+                tafsirSelect.innerHTML = `
+                    <option value="ar.muyassar">تفسير الميسر (King Fahad Complex)</option>
+                    <option value="ar.jalalayn">تفسير الجلالين (Jalalayn)</option>
+                    <option value="ar.qurtubi">تفسير القرطبي (Al-Qurtubi)</option>
+                    <option value="ar.miqbas">تنوير المقباس (Ibn Abbas)</option>
+                    <option value="ar.waseet">التفسير الوسيط (Al-Waseet)</option>
+                    <option value="ar.baghawi">تفسير البغوي (Al-Baghawi)</option>
+                `;
+            } else if (language === 'bn') {
+                // Bengali tafsirs from Quran.com API
+                tafsirSelect.innerHTML = `
+                    <option value="381">Tafsir Fathul Majid</option>
+                    <option value="165">Tafsir Ahsanul Bayaan</option>
+                    <option value="166">Tafsir Abu Bakr Zakaria</option>
+                    <option value="164">Tafseer Ibn Kathir</option>
+                `;
+            } else if (language === 'ur') {
+                // Urdu tafsirs from Quran.com API
+                tafsirSelect.innerHTML = `
+                    <option value="157">Fi Zilal al-Quran (Sayyid Qutb)</option>
+                    <option value="160">Tafsir Ibn Kathir</option>
+                    <option value="818">Tazkir ul Quran (Wahiduddin Khan)</option>
+                    <option value="159">Bayan ul Quran (Dr. Israr Ahmad)</option>
+                `;
+            } else if (language === 'ru') {
+                // Russian tafsirs from Quran.com API
+                tafsirSelect.innerHTML = `
+                    <option value="170">Al-Sa'di</option>
+                `;
+            } else if (language === 'kurd') {
+                // Kurdish tafsirs from Quran.com API
+                tafsirSelect.innerHTML = `
+                    <option value="804">Rebar Kurdish Tafsir</option>
+                `;
+            }
+
+            // Load tafsir for the new selection
+            if (tafsirSelect.options.length > 0) {
+                loadTafsir();
+            }
+        }
+
         // Load tafsir for current verse with better error handling
         function loadTafsir() {
             const selectedTafsir = document.getElementById('tafsir-select').value;
+            const language = document.getElementById('tafsir-language').value;
             currentTafsir = selectedTafsir;
 
             const tafsirText = document.getElementById('tafsir-text');
             tafsirText.innerHTML = 'Loading tafsir...';
 
-            // Use the Quran.com API for English tafsir which provides better English content
-            fetch(`https://api.quran.com/api/v4/tafsirs/${selectedTafsir}/by_ayah/${currentAyah.surah}?words=false`)
+            let apiUrl;
+
+            if (language === 'en' || language === 'bn' || language === 'ur' || language === 'ru' || language === 'kurd') {
+                // Use Quran.com API for non-Arabic languages
+                apiUrl = `https://api.quran.com/api/v4/tafsirs/${selectedTafsir}/by_ayah/${currentAyah.surah}?words=false`;
+            } else {
+                // Use AlQuran Cloud API for Arabic tafsir
+                apiUrl = `https://api.alquran.cloud/v1/ayah/${currentAyah.surah}:${currentAyah.verse}/${selectedTafsir}`;
+            }
+
+            fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
-                    const verseKey = `${currentAyah.surah}:${currentAyah.verse}`;
-                    if (data.tafsir && data.tafsir.verses && data.tafsir.verses[verseKey]) {
-                        // Get the specific verse data
-                        const verseData = data.tafsir.verses[verseKey];
+                    let tafsirContent = '';
+                    let tafsirName = 'Tafsir';
 
-                        // Extract the tafsir text (may contain HTML)
-                        let tafsirContent = '';
-                        if (verseData.text) {
-                            tafsirContent = verseData.text;
-                        } else if (data.tafsir.text) {
-                            tafsirContent = data.tafsir.text;
-                        }
+                    if (language === 'en' || language === 'bn' || language === 'ur' || language === 'ru' || language === 'kurd') {
+                        // Handle Quran.com API response for all non-Arabic languages
+                        const verseKey = `${currentAyah.surah}:${currentAyah.verse}`;
+                        if (data.tafsir && data.tafsir.verses && data.tafsir.verses[verseKey]) {
+                            const verseData = data.tafsir.verses[verseKey];
+                            tafsirContent = verseData.text || data.tafsir.text || '';
+                            tafsirName = data.tafsir.resource_name || 'Tafsir';
 
-                        if (tafsirContent) {
-                            // Clean up HTML tags for better readability while preserving basic formatting
+                            // Clean up HTML tags for better readability
                             tafsirContent = tafsirContent
                                 .replace(/<h[1-6][^>]*>/g, '<strong>')
                                 .replace(/<\/h[1-6]>/g, '</strong><br>')
@@ -939,19 +1082,33 @@
                                 .replace(/style="[^"]*"/g, '')
                                 .replace(/<span[^>]*>/g, '<span>')
                                 .trim();
-
-                            tafsirText.innerHTML = `
-                                <div class="tafsir-header">
-                                    <strong>${data.tafsir.resource_name || 'Tafsir'}</strong>
-                                    <br><em>Verse ${currentAyah.verse} of Surah ${surahNames[currentAyah.surah - 1]}</em>
-                                </div>
-                                <div class="tafsir-body">
-                                    ${tafsirContent}
-                                </div>
-                            `;
-                        } else {
-                            tafsirText.innerHTML = 'Tafsir text not available for this verse.';
                         }
+                    } else {
+                        // Handle Arabic tafsir response from AlQuran Cloud
+                        if (data.status === 'OK' && data.data && data.data.text) {
+                            tafsirContent = data.data.text;
+                            tafsirName = data.data.edition?.name || 'تفسير';
+                        }
+                    }
+
+                    if (tafsirContent) {
+                        // Determine text direction based on language
+                        let textDirection = '';
+                        if (language === 'ar') {
+                            textDirection = 'style="direction: rtl; text-align: right;"';
+                        } else if (language === 'bn' || language === 'ur') {
+                            textDirection = 'style="text-align: justify;"';
+                        }
+
+                        tafsirText.innerHTML = `
+                            <div class="tafsir-header">
+                                <strong>${tafsirName}</strong>
+                                <br><em>Verse ${currentAyah.verse} of Surah ${surahNames[currentAyah.surah - 1]}</em>
+                            </div>
+                            <div class="tafsir-body" ${textDirection}>
+                                ${tafsirContent}
+                            </div>
+                        `;
                     } else {
                         tafsirText.innerHTML = 'Tafsir not available for this verse.';
                     }
