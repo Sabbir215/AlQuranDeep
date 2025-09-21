@@ -373,7 +373,7 @@ AlQuranDeep/
 
 ## Project Status
 
-- **Current Version**: v2.1.0 (Production Ready)
+- **Current Version**: v2.1.1 (Production Ready)
 - **Last Updated**: September 2025
 - **Repository**: AlQuranDeep (GitHub: Sabbir215)
 - **Branch**: main

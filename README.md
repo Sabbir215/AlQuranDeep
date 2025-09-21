@@ -390,7 +390,7 @@ Ready to dive deep into the Quran? Open `index.html` and begin your journey of u
 
 ## 📊 **Project Information**
 
-- **Version**: 2.1.0 (Production Ready)
+- **Version**: 2.1.1 (Production Ready)
 - **Last Updated**: September 2025
 - **Languages Supported**: 6
 - **Tafsir Sources**: 27+
