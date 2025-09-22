@@ -47,7 +47,7 @@
 
         /* Accessibility utility for SEO-visible but visually hidden text */
         .visually-hidden {
-            position: absolute !important;
+            <button id="install-btn" style="display:none" title="Install App">⬇️</button>position: absolute !important;
             height: 1px;
             width: 1px;
             overflow: hidden;
@@ -1145,6 +1145,57 @@
                 navigator.serviceWorker.register('./service-worker.js').catch(console.error);
             });
         }
+
+        // PWA Install prompt handling
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            const btn = document.getElementById('install-btn');
+            if (btn) btn.style.display = 'inline-flex';
+        });
+        window.addEventListener('appinstalled', () => {
+            const btn = document.getElementById('install-btn');
+            if (btn) btn.style.display = 'none';
+            try { showNotification('AlQuranDeep installed successfully', 'success'); } catch (_) { }
+        });
+        document.addEventListener('click', async (e) => {
+            const t = e.target;
+            if (t && t.id === 'install-btn') {
+                if (!deferredInstallPrompt) return;
+                deferredInstallPrompt.prompt();
+                const result = await deferredInstallPrompt.userChoice.catch(() => ({}));
+                if (result && result.outcome === 'accepted') {
+                    try { showNotification('Installing… check your app list', 'success'); } catch (_) { }
+                } else {
+                    try { showNotification('Install dismissed', 'info'); } catch (_) { }
+                }
+                deferredInstallPrompt = null;
+                t.style.display = 'none';
+            }
+        });
+
+        // Handle URL params for quick navigation (shortcuts/search)
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const url = new URL(window.location.href);
+                const q = url.searchParams.get('q');
+                if (q && /^\d+-\d+$/.test(q)) {
+                    const [s, v] = q.split('-').map(n => parseInt(n, 10));
+                    if (!isNaN(s) && !isNaN(v)) {
+                        setTimeout(() => {
+                            if (typeof loadVerse === 'function') loadVerse(s, v);
+                        }, 0);
+                    }
+                }
+                if (url.hash === '#bookmarks') {
+                    setTimeout(() => { if (typeof toggleBookmarks === 'function') toggleBookmarks(); }, 0);
+                }
+                if (url.hash === '#settings') {
+                    setTimeout(() => { if (typeof toggleSettings === 'function') toggleSettings(); }, 0);
+                }
+            } catch (_) { }
+        });
         // Structured Data: WebSite with SearchAction
         const ldWebsite = {
             "@context": "https://schema.org",
