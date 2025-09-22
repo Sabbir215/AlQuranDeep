@@ -5,6 +5,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AlQuranDeep - Understand the Quran Deeply</title>
+    <!-- Primary SEO Meta Tags -->
+    <meta name="description" content="Learn the Quran word by word with verse-by-verse audio, transliteration, translations, and tafsir. Search by surah and verse to study deeply and listen as you read." />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <link rel="canonical" href="https://sabbir215.github.io/AlQuranDeep/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AlQuranDeep" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="AlQuranDeep — Learn Quran Word by Word" />
+    <meta property="og:description" content="Learn the Quran word by word with verse-by-verse audio, transliteration, translations, and tafsir. Search by surah and verse to study deeply and listen as you read." />
+    <meta property="og:url" content="https://sabbir215.github.io/AlQuranDeep/" />
+    <!-- Consider adding og:image once you have a social card image hosted at an absolute URL -->
+    <!-- <meta property="og:image" content="https://sabbir215.github.io/AlQuranDeep/social-card.png" /> -->
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="AlQuranDeep — Learn Quran Word by Word" />
+    <meta name="twitter:description" content="Learn the Quran word by word with verse-by-verse audio, transliteration, translations, and tafsir." />
+
+    <!-- PWA / Theming -->
+    <meta name="theme-color" content="#1a3c34" />
     <style>
         :root {
             --primary-color: #1a3c34;
@@ -13,6 +35,16 @@
             --background-color: #f5f5f5;
             --table-border: #ddd;
             --table-header: #f2f2f2;
+        }
+
+        /* Accessibility utility for SEO-visible but visually hidden text */
+        .visually-hidden {
+            position: absolute !important;
+            height: 1px; width: 1px; overflow: hidden;
+            clip: rect(1px, 1px, 1px, 1px);
+            clip-path: inset(50%);
+            white-space: nowrap; /* prevent line breaks */
+            border: 0; padding: 0; margin: 0;
         }
 
         body {
@@ -983,6 +1015,9 @@
             <div class="surah-info">Surah Al-Fatiha | Verse 1</div>
         </header>
 
+        <!-- SEO: English heading for context (hidden visually, readable to crawlers and assistive tech) -->
+        <h1 class="visually-hidden">Learn Quran Word by Word: Verse-by-Verse Audio, Transliteration, Translation, and Tafsir</h1>
+
         <main>
             <h1 id="arabic" onclick="cycleFontSize()" title="Click to change font size">
                 بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
@@ -1085,6 +1120,56 @@
     </div>
 
     <script>
+        // Structured Data: WebSite with SearchAction
+        const ldWebsite = {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "AlQuranDeep",
+            "url": "https://sabbir215.github.io/AlQuranDeep/",
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://sabbir215.github.io/AlQuranDeep/?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+            }
+        };
+        const ldFaq = {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "How can I learn the Quran word by word?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Use AlQuranDeep to study each verse word by word, with transliteration, translations, and tafsir. You can navigate by Surah and verse and see meanings line by line."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Can I listen to verse-by-verse audio recitation?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes. Play audio for any verse, or enable Surah auto-advance to listen through verses sequentially while you read."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Does this app include tafsir and transliteration?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes. Choose from multiple tafsir sources and show transliteration alongside Arabic and translation to understand pronunciation and meaning deeply."
+                    }
+                }
+            ]
+        };
+        const injectLd = (obj) => {
+            const s = document.createElement('script');
+            s.type = 'application/ld+json';
+            s.text = JSON.stringify(obj);
+            document.head.appendChild(s);
+        };
+        injectLd(ldWebsite);
+        injectLd(ldFaq);
         // Global variables
         let currentAyah = { surah: 1, verse: 1 };
         let surahNames = [];

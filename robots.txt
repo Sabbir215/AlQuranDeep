@@ -1,0 +1,5 @@
+# robots.txt for AlQuranDeep
+User-agent: *
+Allow: /
+
+Sitemap: https://sabbir215.github.io/AlQuranDeep/sitemap.xml
